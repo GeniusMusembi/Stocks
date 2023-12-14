@@ -1,0 +1,68 @@
+import requests
+import tkinter as tk
+from tkinter import scrolledtext
+
+# Replace 'YOUR_API_KEY' with your actual Alpha Vantage API key
+API_KEY = 'R4HPJHF3OI63SOG7'
+
+# List of symbols
+symbols = ['AAPL', 'TSLA', 'GOOGL','IBM']
+
+# Function to get stock quote data for a symbol
+def get_stock_quote(symbol):
+    endpoint = 'https://www.alphavantage.co/query'
+    function = 'GLOBAL_QUOTE'
+
+    params = {
+        'function': function,
+        'symbol': symbol,
+        'apikey': API_KEY,
+    }
+
+    try:
+        response = requests.get(endpoint, params=params)
+        data = response.json()
+
+        if 'Global Quote' in data:
+            return data['Global Quote']
+        else:
+            print(f"Error for {symbol}:", data)
+            return None
+
+    except Exception as e:
+        print(f"Error for {symbol}:", e)
+        return None
+
+def display_stock_data_in_window(stock_data):
+    window = tk.Tk()
+    window.title("STOCK DATA")
+
+    stock_text = scrolledtext.ScrolledText(window, wrap=tk.WORD)
+    stock_text.pack(expand='True', fill='both')
+
+    for symbol, data in stock_data.items():
+        stock_text.insert(tk.END, f"\nSymbol: {symbol}\n")
+        stock_text.insert(tk.END, f"Open: {data['02. open']}\n")
+        stock_text.insert(tk.END, f"High: {data['03. high']}\n")
+        stock_text.insert(tk.END, f"Low: {data['04. low']}\n")
+        stock_text.insert(tk.END, f"Price: {data['05. price']}\n")
+        stock_text.insert(tk.END, f"Volume: {data['06. volume']}\n")
+        stock_text.insert(tk.END, f"Latest Trading Day: {data['07. latest trading day']}\n")
+        stock_text.insert(tk.END, f"Previous Close: {data['08. previous close']}\n")
+        stock_text.insert(tk.END, f"Change: {data['09. change']}\n")
+        stock_text.insert(tk.END, f"Change Percent: {data['10. change percent']}\n\n")
+
+    window.mainloop()
+
+if __name__ == "__main__":
+    stock_data = {}
+
+    for symbol in symbols:
+        data = get_stock_quote(symbol)
+        if data:
+            stock_data[symbol] = data
+
+    if stock_data:
+        display_stock_data_in_window(stock_data)
+    else:
+        print("No stock data available.")
